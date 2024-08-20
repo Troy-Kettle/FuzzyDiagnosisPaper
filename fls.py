@@ -3,108 +3,165 @@ import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 import matplotlib.pyplot as plt
 
-# Create the universe of discourse for each vital sign
-SBP = ctrl.Antecedent(np.arange(50, 201, 1), 'SBP')  # Systolic Blood Pressure
-HR = ctrl.Antecedent(np.arange(30, 150, 1), 'HR')    # Heart Rate
-SPO2 = ctrl.Antecedent(np.arange(70, 100, 1), 'SPO2') # Blood Oxygen Level
-T = ctrl.Antecedent(np.arange(35, 41, 0.1), 'T')      # Temperature
-BS = ctrl.Antecedent(np.arange(50, 200, 1), 'BS')     # Blood Sugar
+# Define the Antecedents (Inputs)
+sbp = ctrl.Antecedent(np.arange(0, 200, 1), 'Systolic Blood Pressure')
+hr = ctrl.Antecedent(np.arange(0, 140, 1), 'Heart Rate')
+spo2 = ctrl.Antecedent(np.arange(80, 100, 1), 'SPO2')
+temp = ctrl.Antecedent(np.arange(35, 40, 0.1), 'Temperature')
+bs = ctrl.Antecedent(np.arange(60, 160, 1), 'Blood Sugar')
 
-# Create the universe of discourse for the output (Risk Group)
-RG = ctrl.Consequent(np.arange(0, 15, 0.1), 'RG')
+# Define the Consequent (Output)
+risk = ctrl.Consequent(np.arange(0, 14, 0.5), 'Risk')
 
-# Define membership functions for RG (Risk Group)
-RG['NRM'] = fuzz.trimf(RG.universe, [0, 0.25, 0.5])
-RG['LRG1'] = fuzz.trimf(RG.universe, [0.5, 1, 1.5])
-RG['LRG2'] = fuzz.trimf(RG.universe, [1.5, 2, 2.5])
-RG['LRG3'] = fuzz.trimf(RG.universe, [2.5, 3, 3.5])
-RG['LRG4'] = fuzz.trimf(RG.universe, [3.5, 4, 4.5])
-RG['HRG5'] = fuzz.trimf(RG.universe, [4.5, 5, 5.5])
-RG['HRG6'] = fuzz.trimf(RG.universe, [5.5, 6, 6.5])
-RG['HRG7'] = fuzz.trimf(RG.universe, [6.5, 7, 7.5])
-RG['HRG8'] = fuzz.trimf(RG.universe, [7.5, 8, 8.5])
-RG['HRG9'] = fuzz.trimf(RG.universe, [8.5, 9, 9.5])
-RG['HRG10'] = fuzz.trimf(RG.universe, [9.5, 10, 10.5])
-RG['HRG11'] = fuzz.trimf(RG.universe, [10.5, 11, 11.5])
-RG['HRG12'] = fuzz.trimf(RG.universe, [11.5, 12, 12.5])
-RG['HRG13'] = fuzz.trimf(RG.universe, [12.5, 13, 13.5])
-RG['HRG14'] = fuzz.trimf(RG.universe, [13.5, 13.75, 14])
+# Define Membership Functions using Trapezoidal Shapes
+# Systolic Blood Pressure (SBP)
+sbp['Low +3'] = fuzz.trapmf(sbp.universe, [0, 0, 70, 75])
+sbp['Low +2'] = fuzz.trapmf(sbp.universe, [70, 75, 80, 85])
+sbp['Low +1'] = fuzz.trapmf(sbp.universe, [80, 85, 95, 100])
+sbp['Normal +0'] = fuzz.trapmf(sbp.universe, [95, 100, 180, 185])
+sbp['High +2'] = fuzz.trapmf(sbp.universe, [180, 185, 200, 200])
 
-# Define membership functions for Systolic Blood Pressure (SBP)
-SBP['Low+3'] = fuzz.trimf(SBP.universe, [50, 50, 75])
-SBP['Low+2'] = fuzz.trimf(SBP.universe, [70, 75, 85])
-SBP['Low+1'] = fuzz.trimf(SBP.universe, [80, 90, 100])
-SBP['Normal'] = fuzz.trimf(SBP.universe, [95, 125, 199])
-SBP['High+1'] = fuzz.trimf(SBP.universe, [185, 200, 200])
-SBP['High+2'] = fuzz.trimf(SBP.universe, [185, 200, 200])
-SBP['High+3'] = fuzz.trimf(SBP.universe, [185, 200, 200])
+# Heart Rate (HR)
+hr['Low +2'] = fuzz.trapmf(hr.universe, [0, 0, 45, 50])
+hr['Low +1'] = fuzz.trapmf(hr.universe, [45, 50, 55, 60])
+hr['Normal +0'] = fuzz.trapmf(hr.universe, [53, 60, 95, 100])
+hr['High +1'] = fuzz.trapmf(hr.universe, [95, 100, 105, 110])
+hr['High +2'] = fuzz.trapmf(hr.universe, [105, 110, 125, 130])
+hr['High +3'] = fuzz.trapmf(hr.universe, [125, 130, 140, 140])
 
-# Define membership functions for Heart Rate (HR)
-HR['Low+3'] = fuzz.trimf(HR.universe, [30, 30, 50])
-HR['Low+2'] = fuzz.trimf(HR.universe, [45, 50, 60])
-HR['Low+1'] = fuzz.trimf(HR.universe, [53, 60, 100])
-HR['Normal'] = fuzz.trimf(HR.universe, [53, 70, 100])
-HR['High+1'] = fuzz.trimf(HR.universe, [95, 110, 125])
-HR['High+2'] = fuzz.trimf(HR.universe, [105, 115, 130])
-HR['High+3'] = fuzz.trimf(HR.universe, [125, 150, 150])
+# SPO2
+spo2['Low +3'] = fuzz.trapmf(spo2.universe, [80, 80, 83, 85])
+spo2['Low +2'] = fuzz.trapmf(spo2.universe, [83, 85, 87, 90])
+spo2['Low +1'] = fuzz.trapmf(spo2.universe, [87, 90, 92, 95])
+spo2['Normal +0'] = fuzz.trapmf(spo2.universe, [93, 95, 100, 100])
 
-# Define membership functions for SPO2
-SPO2['Low+3'] = fuzz.trimf(SPO2.universe, [70, 70, 85])
-SPO2['Low+2'] = fuzz.trimf(SPO2.universe, [83, 85, 90])
-SPO2['Low+1'] = fuzz.trimf(SPO2.universe, [87, 90, 95])
-SPO2['Normal'] = fuzz.trimf(SPO2.universe, [93, 95, 100])
+# Temperature
+temp['Low +2'] = fuzz.trapmf(temp.universe, [35, 35, 36, 36.5])
+temp['Normal +0'] = fuzz.trapmf(temp.universe, [36, 36.5, 38, 38.5])
+temp['High +2'] = fuzz.trapmf(temp.universe, [38, 38.5, 40, 40])
 
-# Define membership functions for Temperature (T)
-T['Low+3'] = fuzz.trimf(T.universe, [35, 35, 36.5])
-T['Low+2'] = fuzz.trimf(T.universe, [36.5, 36.5, 36.5])
-T['Normal'] = fuzz.trimf(T.universe, [36, 38.5, 38.5])
-T['High+1'] = fuzz.trimf(T.universe, [38, 39, 40])
-T['High+2'] = fuzz.trimf(T.universe, [38, 40, 41])
+# Blood Sugar
+bs['Low +3'] = fuzz.trapmf(bs.universe, [60, 60, 63, 66])
+bs['Low +2'] = fuzz.trapmf(bs.universe, [63, 66, 70, 72])
+bs['Normal +0'] = fuzz.trapmf(bs.universe, [70, 72, 106, 110])
+bs['High +2'] = fuzz.trapmf(bs.universe, [106, 110, 140, 150])
+bs['High +3'] = fuzz.trapmf(bs.universe, [140, 150, 160, 160])
 
-# Define membership functions for Blood Sugar (BS)
-BS['Low+3'] = fuzz.trimf(BS.universe, [50, 50, 66])
-BS['Low+2'] = fuzz.trimf(BS.universe, [63, 66, 72])
-BS['Normal'] = fuzz.trimf(BS.universe, [70, 100, 110])
-BS['High+1'] = fuzz.trimf(BS.universe, [106, 120, 150])
-BS['High+2'] = fuzz.trimf(BS.universe, [106, 120, 150])
-BS['High+3'] = fuzz.trimf(BS.universe, [140, 180, 200])
+# Risk levels based on provided ranges
+risk['NRM'] = fuzz.trapmf(risk.universe, [0, 0, 0.5, 1.5])
+risk['LRG1'] = fuzz.trapmf(risk.universe, [0.5, 1.5, 1.5, 2.5])
+risk['LRG2'] = fuzz.trapmf(risk.universe, [1.5, 2.5, 2.5, 3.5])
+risk['LRG3'] = fuzz.trapmf(risk.universe, [2.5, 3.5, 3.5, 4.5])
+risk['LRG4'] = fuzz.trapmf(risk.universe, [3.5, 4.5, 4.5, 5.5])
+risk['HRG5'] = fuzz.trapmf(risk.universe, [4.5, 5.5, 5.5, 6.5])
+risk['HRG6'] = fuzz.trapmf(risk.universe, [5.5, 6.5, 6.5, 7.5])
+risk['HRG7'] = fuzz.trapmf(risk.universe, [6.5, 7.5, 7.5, 8.5])
+risk['HRG8'] = fuzz.trapmf(risk.universe, [7.5, 8.5, 8.5, 9.5])
+risk['HRG9'] = fuzz.trapmf(risk.universe, [8.5, 9.5, 9.5, 10.5])
+risk['HRG10'] = fuzz.trapmf(risk.universe, [9.5, 10.5, 10.5, 11.5])
+risk['HRG11'] = fuzz.trapmf(risk.universe, [10.5, 11.5, 11.5, 12.5])
+risk['HRG12'] = fuzz.trapmf(risk.universe, [11.5, 12.5, 12.5, 13.5])
+risk['HRG13'] = fuzz.trapmf(risk.universe, [12.5, 13.5, 13.5, 14])
+risk['HRG14'] = fuzz.trapmf(risk.universe, [13.5, 14, 14, 14])
 
-# Define the fuzzy rules based on the input vital signs and the corresponding risk group output
-rules = [
-    ctrl.Rule(SBP['Low+3'] | HR['Low+3'] | SPO2['Low+3'] | T['Low+3'] | BS['Low+3'], RG['HRG14']),
-    ctrl.Rule(SBP['Low+2'] | HR['Low+2'] | SPO2['Low+2'] | T['Low+2'] | BS['Low+2'], RG['HRG13']),
-    ctrl.Rule(SBP['Low+1'] | HR['Low+1'] | SPO2['Low+1'] | T['Normal'] | BS['Normal'], RG['LRG4']),
-    ctrl.Rule(SBP['Normal'] & HR['Normal'] & SPO2['Normal'] & T['Normal'] & BS['Normal'], RG['NRM']),
-    ctrl.Rule(SBP['High+1'] | HR['High+1'] | T['High+1'] | BS['High+1'], RG['LRG3']),
-    ctrl.Rule(SBP['High+2'] | HR['High+2'] | T['High+2'] | BS['High+2'], RG['HRG6']),
-    ctrl.Rule(SBP['High+3'] | HR['High+3'], RG['HRG7']),
-]
+# Define the fuzzy rules (example rules)
+rule1 = ctrl.Rule(sbp['Low +3'] | hr['Low +2'] | spo2['Low +3'] | temp['Low +2'] | bs['Low +3'], risk['HRG14'])
+rule2 = ctrl.Rule(sbp['Normal +0'] & hr['Normal +0'] & spo2['Normal +0'] & temp['Normal +0'] & bs['Normal +0'], risk['NRM'])
+rule3 = ctrl.Rule(sbp['High +2'] | hr['High +3'] | spo2['Low +2'] | temp['High +2'] | bs['High +3'], risk['HRG8'])
 
-# Create the control system and simulation
-rg_ctrl = ctrl.ControlSystem(rules)
-rg_simulation = ctrl.ControlSystemSimulation(rg_ctrl)
+# Control system creation and simulation
+risk_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
+risk_sim = ctrl.ControlSystemSimulation(risk_ctrl)
 
-# Example Input
-rg_simulation.input['SBP'] = 90
-rg_simulation.input['HR'] = 80
-rg_simulation.input['SPO2'] = 96
-rg_simulation.input['T'] = 37.5
-rg_simulation.input['BS'] = 100
+# Example: Input values
+risk_sim.input['Systolic Blood Pressure'] = 110
+risk_sim.input['Heart Rate'] = 70
+risk_sim.input['SPO2'] = 96
+risk_sim.input['Temperature'] = 37.5
+risk_sim.input['Blood Sugar'] = 90
 
-# Compute the result
-rg_simulation.compute()
+# Compute the risk
+risk_sim.compute()
 
-# Output the risk group value
-print(f"Calculated Risk Group: {rg_simulation.output['RG']}")
+# Print the output risk level
+print(f"Calculated Risk Level: {risk_sim.output['Risk']}")
 
-# View membership functions for each input
-SBP.view()
-HR.view()
-SPO2.view()
-T.view()
-BS.view()
+# Function to plot trapezoidal membership functions
+def plot_mf(ax, universe, mfs, title):
+    for label, mf in mfs.items():
+        y = fuzz.trapmf(universe, mf)
+        ax.plot(universe, y, label=label)
+    ax.set_title(title)
+    ax.set_ylim(0, 1.05)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.set_ylabel('Membership')
 
-# View membership function for the Risk Group output with the calculated value
-RG.view(sim=rg_simulation)
+# Create the plot
+fig, axs = plt.subplots(3, 2, figsize=(20, 15))
+fig.suptitle('MEWS-based Categorization Membership Functions', fontsize=16)
 
+# Systolic Blood Pressure (SBP)
+plot_mf(axs[0, 0], sbp.universe, {
+    'Low +3': [0, 0, 70, 75],
+    'Low +2': [70, 75, 80, 85],
+    'Low +1': [80, 85, 95, 100],
+    'Normal +0': [95, 100, 180, 185],
+    'High +2': [180, 185, 200, 200]
+}, 'Systolic Blood Pressure (SBP)')
+
+# Heart Rate (HR)
+plot_mf(axs[0, 1], hr.universe, {
+    'Low +2': [0, 0, 45, 50],
+    'Low +1': [45, 50, 55, 60],
+    'Normal +0': [53, 60, 95, 100],
+    'High +1': [95, 100, 105, 110],
+    'High +2': [105, 110, 125, 130],
+    'High +3': [125, 130, 140, 140]
+}, 'Heart Rate (HR)')
+
+# SPO2
+plot_mf(axs[1, 0], spo2.universe, {
+    'Low +3': [80, 80, 83, 85],
+    'Low +2': [83, 85, 87, 90],
+    'Low +1': [87, 90, 92, 95],
+    'Normal +0': [93, 95, 100, 100]
+}, 'SPO2')
+
+# Temperature
+plot_mf(axs[1, 1], temp.universe, {
+    'Low +2': [35, 35, 36, 36.5],
+    'Normal +0': [36, 36.5, 38, 38.5],
+    'High +2': [38, 38.5, 40, 40]
+}, 'Temperature')
+
+# Blood Sugar
+plot_mf(axs[2, 0], bs.universe, {
+    'Low +3': [60, 60, 63, 66],
+    'Low +2': [63, 66, 70, 72],
+    'Normal +0': [70, 72, 106, 110],
+    'High +2': [106, 110, 140, 150],
+    'High +3': [140, 150, 160, 160]
+}, 'Blood Sugar')
+
+# Risk
+plot_mf(axs[2, 1], risk.universe, {
+    'NRM': [0, 0, 0.5, 1.5],
+    'LRG1': [0.5, 1.5, 1.5, 2.5],
+    'LRG2': [1.5, 2.5, 2.5, 3.5],
+    'LRG3': [2.5, 3.5, 3.5, 4.5],
+    'LRG4': [3.5, 4.5, 4.5, 5.5],
+    'HRG5': [4.5, 5.5, 5.5, 6.5],
+    'HRG6': [5.5, 6.5, 6.5, 7.5],
+    'HRG7': [6.5, 7.5, 7.5, 8.5],
+    'HRG8': [7.5, 8.5, 8.5, 9.5],
+    'HRG9': [8.5, 9.5, 9.5, 10.5],
+    'HRG10': [9.5, 10.5, 10.5, 11.5],
+    'HRG11': [10.5, 11.5, 11.5, 12.5],
+    'HRG12': [11.5, 12.5, 12.5, 13.5],
+    'HRG13': [12.5, 13.5, 13.5, 14],
+    'HRG14': [13.5, 14, 14, 14]
+}, 'Risk')
+
+plt.tight_layout()
+plt.subplots_adjust(top=0.93)
 plt.show()
