@@ -1,231 +1,135 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Define trapezoidal membership function
-def trapezoidal_mf(x, a, b, c, d):
-    b = a + 0.01 if a == b else b
-    d = c + 0.01 if c == d else d
-    return np.maximum(0, np.minimum((x-a)/(b-a), np.minimum(1, (d-x)/(d-c))))
+# Define the universe of discourse for each variable
+sbp_universe = np.arange(0, 200, 1)
+hr_universe = np.arange(0, 140, 1)
+spo2_universe = np.arange(80, 100, 1)
+temp_universe = np.arange(35, 40, 0.1)
+bs_universe = np.arange(60, 160, 1)
+risk_universe = np.arange(0, 14, 0.5)
 
-# Define Interval Type-2 trapezoidal membership function
-def interval_t2_mf(x, lower, upper):
-    lower_mf = trapezoidal_mf(x, *lower)
-    upper_mf = trapezoidal_mf(x, *upper)
+# Function to create trapezoidal membership function
+def trapmf(x, params):
+    a, b, c, d = params
+    y = np.zeros_like(x)
+    y[x <= a] = 0
+    y[(a < x) & (x < b)] = (x[(a < x) & (x < b)] - a) / (b - a)
+    y[(b <= x) & (x <= c)] = 1
+    y[(c < x) & (x < d)] = (d - x[(c < x) & (x < d)]) / (d - c)
+    y[x >= d] = 0
+    return y
+
+# Function to create interval type-2 fuzzy set
+def create_it2fs(universe, params, uncertainty=0.1):
+    lower_params = [p - uncertainty for p in params]
+    upper_params = [p + uncertainty for p in params]
+    lower_mf = trapmf(universe, lower_params)
+    upper_mf = trapmf(universe, upper_params)
     return lower_mf, upper_mf
 
-# Define membership functions for Systolic Blood Pressure (SBP)
-def sbp_low3(x):
-    lower = [50, 50.01, 65, 75]
-    upper = [50, 50.01, 70, 80]
-    return interval_t2_mf(x, lower, upper)
-
-def sbp_low2(x):
-    lower = [70, 75, 80, 85]
-    upper = [65, 75, 85, 90]
-    return interval_t2_mf(x, lower, upper)
-
-def sbp_low1(x):
-    lower = [80, 90, 95, 100]
-    upper = [75, 85, 95, 105]
-    return interval_t2_mf(x, lower, upper)
-
-def sbp_normal(x):
-    lower = [95, 125, 135, 150]
-    upper = [90, 120, 140, 155]
-    return interval_t2_mf(x, lower, upper)
-
-def sbp_high1(x):
-    lower = [135, 145, 165, 185]
-    upper = [130, 140, 170, 190]
-    return interval_t2_mf(x, lower, upper)
-
-def sbp_high2(x):
-    lower = [170, 185, 195, 200]
-    upper = [160, 180, 195, 200]
-    return interval_t2_mf(x, lower, upper)
-
-def sbp_high3(x):
-    lower = [185, 195, 200, 200.01]
-    upper = [175, 190, 200, 200.01]
-    return interval_t2_mf(x, lower, upper)
-
-# Define membership functions for Heart Rate (HR)
-def hr_low3(x):
-    lower = [30, 30.01, 40, 50]
-    upper = [30, 30.01, 45, 55]
-    return interval_t2_mf(x, lower, upper)
-
-def hr_low2(x):
-    lower = [45, 50, 55, 60]
-    upper = [40, 50, 60, 65]
-    return interval_t2_mf(x, lower, upper)
-
-def hr_low1(x):
-    lower = [53, 60, 75, 100]
-    upper = [50, 60, 80, 105]
-    return interval_t2_mf(x, lower, upper)
-
-def hr_normal(x):
-    lower = [60, 70, 90, 100]
-    upper = [55, 65, 95, 105]
-    return interval_t2_mf(x, lower, upper)
-
-def hr_high1(x):
-    lower = [90, 100, 115, 125]
-    upper = [85, 95, 120, 130]
-    return interval_t2_mf(x, lower, upper)
-
-def hr_high2(x):
-    lower = [105, 115, 125, 130]
-    upper = [100, 110, 130, 135]
-    return interval_t2_mf(x, lower, upper)
-
-def hr_high3(x):
-    lower = [125, 135, 145, 150]
-    upper = [120, 130, 145, 150]
-    return interval_t2_mf(x, lower, upper)
-
-# Define membership functions for SPO2
-def spo2_low3(x):
-    lower = [70, 70.01, 80, 85]
-    upper = [70, 70.01, 83, 88]
-    return interval_t2_mf(x, lower, upper)
-
-def spo2_low2(x):
-    lower = [83, 85, 88, 90]
-    upper = [80, 85, 90, 92]
-    return interval_t2_mf(x, lower, upper)
-
-def spo2_low1(x):
-    lower = [87, 90, 92, 95]
-    upper = [85, 88, 93, 97]
-    return interval_t2_mf(x, lower, upper)
-
-def spo2_normal(x):
-    lower = [93, 95, 98, 100]
-    upper = [90, 95, 98, 100]
-    return interval_t2_mf(x, lower, upper)
-
-# Define membership functions for Temperature (T)
-def t_low3(x):
-    lower = [35, 35.01, 36, 36.5]
-    upper = [35, 35.01, 36.2, 36.7]
-    return interval_t2_mf(x, lower, upper)
-
-def t_low2(x):
-    lower = [36.2, 36.5, 36.7, 37]
-    upper = [36, 36.5, 37, 37.2]
-    return interval_t2_mf(x, lower, upper)
-
-def t_normal(x):
-    lower = [36.7, 37, 38.5, 38.5]
-    upper = [36.5, 37, 38.5, 38.8]
-    return interval_t2_mf(x, lower, upper)
-
-def t_high1(x):
-    lower = [38.3, 38.5, 39, 39.5]
-    upper = [38, 38.5, 39.2, 40]
-    return interval_t2_mf(x, lower, upper)
-
-def t_high2(x):
-    lower = [39, 40, 40.5, 41]
-    upper = [38.8, 40, 41, 41.01]
-    return interval_t2_mf(x, lower, upper)
-
-# Define membership functions for Blood Sugar (BS)
-def bs_low3(x):
-    lower = [50, 50.01, 60, 66]
-    upper = [50, 50.01, 63, 68]
-    return interval_t2_mf(x, lower, upper)
-
-def bs_low2(x):
-    lower = [63, 66, 70, 72]
-    upper = [60, 66, 72, 74]
-    return interval_t2_mf(x, lower, upper)
-
-def bs_normal(x):
-    lower = [70, 85, 95, 110]
-    upper = [65, 80, 100, 115]
-    return interval_t2_mf(x, lower, upper)
-
-def bs_high1(x):
-    lower = [95, 110, 135, 150]
-    upper = [90, 105, 140, 160]
-    return interval_t2_mf(x, lower, upper)
-
-def bs_high2(x):
-    lower = [140, 160, 175, 190]
-    upper = [135, 155, 180, 195]
-    return interval_t2_mf(x, lower, upper)
-
-def bs_high3(x):
-    lower = [175, 190, 200, 200.01]
-    upper = [170, 185, 200, 200.01]
-    return interval_t2_mf(x, lower, upper)
-
-# Define the fuzzy rules based on the input vital signs and the corresponding risk group output
-def apply_rules(inputs):
-    sbp_l3 = sbp_low3(inputs['SBP'])
-    hr_l3 = hr_low3(inputs['HR'])
-    spo2_l3 = spo2_low3(inputs['SPO2'])
-    t_l3 = t_low3(inputs['T'])
-    bs_l3 = bs_low3(inputs['BS'])
-
-    # Example Rule 1: High risk if all are low+3
-    rule1_lower = np.minimum.reduce([sbp_l3[0], hr_l3[0], spo2_l3[0], t_l3[0], bs_l3[0]])
-    rule1_upper = np.minimum.reduce([sbp_l3[1], hr_l3[1], spo2_l3[1], t_l3[1], bs_l3[1]])
-
-    sbp_nrm = sbp_normal(inputs['SBP'])
-    hr_nrm = hr_normal(inputs['HR'])
-    spo2_nrm = spo2_normal(inputs['SPO2'])
-    t_nrm = t_normal(inputs['T'])
-    bs_nrm = bs_normal(inputs['BS'])
-
-    # Example Rule 2: Normal risk if all are normal
-    rule2_lower = np.minimum.reduce([sbp_nrm[0], hr_nrm[0], spo2_nrm[0], t_nrm[0], bs_nrm[0]])
-    rule2_upper = np.minimum.reduce([sbp_nrm[1], hr_nrm[1], spo2_nrm[1], t_nrm[1], bs_nrm[1]])
-
-    # Combine results
-    result_lower = np.maximum(rule1_lower * 14, rule2_lower * 0)
-    result_upper = np.maximum(rule1_upper * 14, rule2_upper * 0)
-
-    return result_lower.mean(), result_upper.mean()
-
-# Example Input
-inputs = {
-    'SBP': 90,
-    'HR': 80,
-    'SPO2': 96,
-    'T': 37.5,
-    'BS': 100
+# Define the Antecedents (Inputs)
+sbp = {
+    'Low +3': create_it2fs(sbp_universe, [0, 0, 70, 75]),
+    'Low +2': create_it2fs(sbp_universe, [70, 75, 80, 85]),
+    'Low +1': create_it2fs(sbp_universe, [80, 85, 95, 100]),
+    'Normal +0': create_it2fs(sbp_universe, [95, 100, 180, 185]),
+    'High +2': create_it2fs(sbp_universe, [180, 185, 200, 200])
 }
 
-# Apply the fuzzy logic rules
-result = apply_rules(inputs)
-print(f"Calculated Risk Group Interval: {result[0]} - {result[1]}")
-
-# Visualize all membership functions
-x_ranges = {
-    'SBP': np.linspace(50, 200, 500),
-    'HR': np.linspace(30, 150, 500),
-    'SPO2': np.linspace(70, 100, 500),
-    'T': np.linspace(35, 41, 500),
-    'BS': np.linspace(50, 200, 500)
+hr = {
+    'Low +2': create_it2fs(hr_universe, [0, 0, 45, 50]),
+    'Low +1': create_it2fs(hr_universe, [45, 50, 55, 60]),
+    'Normal +0': create_it2fs(hr_universe, [53, 60, 95, 100]),
+    'High +1': create_it2fs(hr_universe, [95, 100, 105, 110]),
+    'High +2': create_it2fs(hr_universe, [105, 110, 125, 130]),
+    'High +3': create_it2fs(hr_universe, [125, 130, 140, 140])
 }
 
-# Plot membership functions
-for key, x in x_ranges.items():
-    plt.figure(figsize=(10, 6))
-    funcs = [f'{key.lower()}_low3', f'{key.lower()}_low2', f'{key.lower()}_low1', f'{key.lower()}_normal', f'{key.lower()}_high1', f'{key.lower()}_high2', f'{key.lower()}_high3']
-    for func_name in funcs:
-        func = globals().get(func_name)
-        if func:
-            lower, upper = func(x)
-            plt.plot(x, lower, label=f'{func_name} lower', linestyle='--')
-            plt.plot(x, upper, label=f'{func_name} upper', linestyle='-')
-    plt.title(f'Interval Type-2 Membership Functions for {key}')
-    plt.xlabel(key)
-    plt.ylabel('Membership Degree')
-    plt.legend()
-    plt.grid()
-    plt.show()
+spo2 = {
+    'Low +3': create_it2fs(spo2_universe, [80, 80, 83, 85]),
+    'Low +2': create_it2fs(spo2_universe, [83, 85, 87, 90]),
+    'Low +1': create_it2fs(spo2_universe, [87, 90, 92, 95]),
+    'Normal +0': create_it2fs(spo2_universe, [93, 95, 100, 100])
+}
+
+temp = {
+    'Low +2': create_it2fs(temp_universe, [35, 35, 36, 36.5]),
+    'Normal +0': create_it2fs(temp_universe, [36, 36.5, 38, 38.5]),
+    'High +2': create_it2fs(temp_universe, [38, 38.5, 40, 40])
+}
+
+bs = {
+    'Low +3': create_it2fs(bs_universe, [60, 60, 63, 66]),
+    'Low +2': create_it2fs(bs_universe, [63, 66, 70, 72]),
+    'Normal +0': create_it2fs(bs_universe, [70, 72, 106, 110]),
+    'High +2': create_it2fs(bs_universe, [106, 110, 140, 150]),
+    'High +3': create_it2fs(bs_universe, [140, 150, 160, 160])
+}
+
+# Define the Consequent (Output)
+risk = {
+    'NRM': create_it2fs(risk_universe, [0, 0, 0.5, 1.5]),
+    'LRG1': create_it2fs(risk_universe, [0.5, 1.5, 1.5, 2.5]),
+    'LRG2': create_it2fs(risk_universe, [1.5, 2.5, 2.5, 3.5]),
+    'LRG3': create_it2fs(risk_universe, [2.5, 3.5, 3.5, 4.5]),
+    'LRG4': create_it2fs(risk_universe, [3.5, 4.5, 4.5, 5.5]),
+    'HRG5': create_it2fs(risk_universe, [4.5, 5.5, 5.5, 6.5]),
+    'HRG6': create_it2fs(risk_universe, [5.5, 6.5, 6.5, 7.5]),
+    'HRG7': create_it2fs(risk_universe, [6.5, 7.5, 7.5, 8.5]),
+    'HRG8': create_it2fs(risk_universe, [7.5, 8.5, 8.5, 9.5]),
+    'HRG9': create_it2fs(risk_universe, [8.5, 9.5, 9.5, 10.5]),
+    'HRG10': create_it2fs(risk_universe, [9.5, 10.5, 10.5, 11.5]),
+    'HRG11': create_it2fs(risk_universe, [10.5, 11.5, 11.5, 12.5]),
+    'HRG12': create_it2fs(risk_universe, [11.5, 12.5, 12.5, 13.5]),
+    'HRG13': create_it2fs(risk_universe, [12.5, 13.5, 13.5, 14]),
+    'HRG14': create_it2fs(risk_universe, [13.5, 14, 14, 14])
+}
+
+# Define the fuzzy rules (manually evaluating)
+def evaluate_rules(inputs):
+    # Placeholder for rule evaluation, return a fuzzy set for risk
+    return risk['NRM']  # Defaulting to 'NRM' for simplicity
+
+# Example: Input values
+input_values = {
+    "SBP": 110,
+    "HR": 70,
+    "SPO2": 96,
+    "Temp": 37.5,
+    "BS": 90
+}
+
+# Compute the risk
+def compute_risk(input_values):
+    # Simplified for demonstration, you need to implement rule evaluation
+    fuzzy_risk = evaluate_rules(input_values)
+    # Aggregate the risk values
+    return fuzzy_risk
+
+# Compute the fuzzy output
+fuzzy_risk = compute_risk(input_values)
+
+# Function to plot interval type-2 fuzzy sets
+def plot_it2fs(ax, universe, it2fs_dict, title):
+    for label, (lower_mf, upper_mf) in it2fs_dict.items():
+        ax.fill_between(universe, lower_mf, upper_mf, alpha=0.5, label=label)
+    ax.set_title(title)
+    ax.set_ylim(0, 1.05)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    ax.set_ylabel('Membership')
+
+# Create the plot
+fig, axs = plt.subplots(3, 2, figsize=(20, 15))
+fig.suptitle('Type-2 MEWS-based Categorization Membership Functions', fontsize=16)
+
+plot_it2fs(axs[0, 0], sbp_universe, sbp, 'Systolic Blood Pressure (SBP)')
+plot_it2fs(axs[0, 1], hr_universe, hr, 'Heart Rate (HR)')
+plot_it2fs(axs[1, 0], spo2_universe, spo2, 'SPO2')
+plot_it2fs(axs[1, 1], temp_universe, temp, 'Temperature')
+plot_it2fs(axs[2, 0], bs_universe, bs, 'Blood Sugar')
+plot_it2fs(axs[2, 1], risk_universe, risk, 'Risk')
+
+plt.tight_layout()
+plt.subplots_adjust(top=0.93)
+plt.show()
